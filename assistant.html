@@ -130,6 +130,7 @@ cursor:pointer;
 margin-top:12px;
 display:flex;
 gap:8px;
+align-items:center;
 }
 
 input{
@@ -152,6 +153,35 @@ font-weight:bold;
 
 button.send-btn:hover{
 background:#1B5E20;
+}
+
+button.mic-btn{
+padding:12px 14px;
+background:#2E7D32;
+color:white;
+border:none;
+cursor:pointer;
+border-radius:6px;
+font-size:18px;
+display:flex;
+align-items:center;
+justify-content:center;
+width:50px;
+}
+
+button.mic-btn:hover{
+background:#1B5E20;
+}
+
+button.mic-btn.listening{
+background:#d32f2f;
+animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
 </style>
@@ -190,6 +220,7 @@ background:#1B5E20;
 
 <div class="input-row">
 <input id="question" placeholder="Type your question... / Andika ikibazo cyawe...">
+<button class="mic-btn" id="micBtn" title="Voice Input">🎤</button>
 <button class="send-btn" onclick="sendMessage()">Send</button>
 </div>
 
@@ -206,6 +237,8 @@ background:#1B5E20;
 // ---------------------------------------------------------
 
 let currentLang = "en";
+let recognition = null;
+let isListening = false;
 
 const suggestionSets = {
   en: ["Does the crop need water?", "Will it rain today?", "What is the soil moisture?"],
@@ -231,6 +264,83 @@ function renderSuggestions(){
     btn.onclick = () => { document.getElementById("question").value = s; sendMessage(); };
     box.appendChild(btn);
   });
+}
+
+// Voice Recognition Setup
+function initVoiceRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    console.warn("Speech recognition not supported in this browser.");
+    return null;
+  }
+
+  const rec = new SpeechRecognition();
+  rec.continuous = false;
+  rec.interimResults = false;
+  
+  // Set language based on current selection
+  rec.lang = currentLang === "rw" ? "rw-RW" : "en-US";
+
+  rec.onresult = function(event) {
+    const transcript = event.results[0][0].transcript.trim();
+    const inputField = document.getElementById("question");
+    inputField.value = transcript;
+    // Auto-send after voice input
+    setTimeout(() => {
+      sendMessage();
+    }, 300);
+  };
+
+  rec.onerror = function(event) {
+    console.error("Speech recognition error:", event.error);
+    stopListening();
+  };
+
+  rec.onend = function() {
+    stopListening();
+  };
+
+  return rec;
+}
+
+function toggleVoiceInput() {
+  if (!recognition) {
+    recognition = initVoiceRecognition();
+    if (!recognition) {
+      alert("Voice recognition is not supported in your browser. Please use Chrome or Edge for best results.");
+      return;
+    }
+  }
+
+  if (isListening) {
+    stopListening();
+  } else {
+    startListening();
+  }
+}
+
+function startListening() {
+  try {
+    recognition.lang = currentLang === "rw" ? "rw-RW" : "en-US";
+    recognition.start();
+    isListening = true;
+    const micBtn = document.getElementById("micBtn");
+    micBtn.classList.add("listening");
+    micBtn.title = "Listening...";
+  } catch (e) {
+    console.error(e);
+    stopListening();
+  }
+}
+
+function stopListening() {
+  if (recognition) {
+    recognition.stop();
+  }
+  isListening = false;
+  const micBtn = document.getElementById("micBtn");
+  micBtn.classList.remove("listening");
+  micBtn.title = "Voice Input";
 }
 
 function matchResponse(question){
@@ -284,6 +394,9 @@ function sendMessage(){
 document.getElementById("question").addEventListener("keypress", function(e){
   if(e.key === "Enter") sendMessage();
 });
+
+// Add voice button listener
+document.getElementById("micBtn").addEventListener("click", toggleVoiceInput);
 
 renderSuggestions();
 
