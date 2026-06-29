@@ -114,6 +114,24 @@ background:#1B5E20;
 
 }
 
+.login-box button.secondary{
+
+background:white;
+
+color:#2E7D32;
+
+border:1px solid #2E7D32;
+
+margin-top:8px;
+
+}
+
+.login-box button.secondary:hover{
+
+background:#E8F5E9;
+
+}
+
 .lang-toggle{
 
 margin-top:15px;
@@ -146,6 +164,40 @@ margin-top:8px;
 
 }
 
+.success-msg{
+
+color:#1B5E20;
+
+font-size:13px;
+
+display:none;
+
+margin-top:8px;
+
+}
+
+.switch-form{
+
+margin-top:18px;
+
+font-size:13px;
+
+color:#555;
+
+}
+
+.switch-form a{
+
+color:#2E7D32;
+
+font-weight:bold;
+
+text-decoration:none;
+
+cursor:pointer;
+
+}
+
 .demo-note{
 
 margin-top:20px;
@@ -160,6 +212,12 @@ padding-top:10px;
 
 }
 
+.hidden{
+
+display:none;
+
+}
+
 </style>
 
 </head>
@@ -171,65 +229,226 @@ padding-top:10px;
 <h1>🌱 AquaMind AI</h1>
 <p class="tagline" id="tagline">Smarter Farming Through Artificial Intelligence</p>
 
-<input type="text" id="username" placeholder="Username">
-<input type="password" id="password" placeholder="Password">
+<!-- LOGIN FORM -->
+<div id="loginForm">
 
-<p class="error-msg" id="errorMsg">Incorrect username or password.</p>
+  <input type="text" id="loginUsername" placeholder="Username">
+  <input type="password" id="loginPassword" placeholder="Password">
 
-<button onclick="login()" id="loginBtn">Login</button>
+  <p class="error-msg" id="loginError">Incorrect username or password.</p>
+
+  <button onclick="login()" id="loginBtn">Login</button>
+
+  <p class="switch-form" id="toSignupText">
+    Don't have an account? <a onclick="showForm('signup')" id="toSignupLink">Sign up</a>
+  </p>
+
+</div>
+
+<!-- SIGN UP FORM -->
+<div id="signupForm" class="hidden">
+
+  <input type="text" id="signupUsername" placeholder="Choose a username">
+  <input type="password" id="signupPassword" placeholder="Choose a password">
+  <input type="password" id="signupConfirm" placeholder="Confirm password">
+
+  <p class="error-msg" id="signupError"></p>
+  <p class="success-msg" id="signupSuccess">Account created! You can now log in.</p>
+
+  <button onclick="signup()" id="signupBtn">Create Account</button>
+
+  <p class="switch-form" id="toLoginText">
+    Already have an account? <a onclick="showForm('login')" id="toLoginLink">Log in</a>
+  </p>
+
+</div>
 
 <div class="lang-toggle">
 <a onclick="setLanguage('en')">English</a> | <a onclick="setLanguage('rw')">Kinyarwanda</a>
 </div>
 
 <div class="demo-note">
-Demo mode: enter any username/password to continue.<br>
-This page is a frontend prototype — real authentication via Firebase is planned (see project roadmap).
+Demo mode: accounts are saved in this browser only (no server yet).<br>
+Real authentication via Firebase is planned (see project roadmap).
 </div>
 
 </div>
 
 <script>
 
+// ---------------------------------------------------------
+// DEMO ACCOUNT STORAGE
+// Accounts are stored in this browser's localStorage as a simple
+// username -> password map under "aquamind_accounts". This lets
+// Sign Up and Login work together for demo purposes without a
+// real backend. Replace with Firebase Authentication when ready:
+// https://firebase.google.com/docs/auth/web/password-auth
+// ---------------------------------------------------------
+
+function getAccounts(){
+  try{
+    return JSON.parse(localStorage.getItem("aquamind_accounts")) || {};
+  } catch(e){
+    return {};
+  }
+}
+
+function saveAccounts(accounts){
+  localStorage.setItem("aquamind_accounts", JSON.stringify(accounts));
+}
+
 const text = {
   en: {
     tagline: "Smarter Farming Through Artificial Intelligence",
-    username: "Username",
-    password: "Password",
-    login: "Login",
-    error: "Incorrect username or password."
+    loginUsername: "Username",
+    loginPassword: "Password",
+    loginBtn: "Login",
+    loginError: "Incorrect username or password.",
+    toSignupText: "Don't have an account? ",
+    toSignupLink: "Sign up",
+    signupUsername: "Choose a username",
+    signupPassword: "Choose a password",
+    signupConfirm: "Confirm password",
+    signupBtn: "Create Account",
+    signupSuccess: "Account created! You can now log in.",
+    errEmpty: "Please fill in all fields.",
+    errMismatch: "Passwords do not match.",
+    errExists: "That username is already taken.",
+    toLoginText: "Already have an account? ",
+    toLoginLink: "Log in"
   },
   rw: {
     tagline: "Ubuhinzi Bwiza Bukoresheje Ubwenge Bw'Ubukorano",
-    username: "Izina ry'ukoresha",
-    password: "Ijambo ry'ibanga",
-    login: "Injira",
-    error: "Izina cyangwa ijambo ry'ibanga sibyo."
+    loginUsername: "Izina ry'ukoresha",
+    loginPassword: "Ijambo ry'ibanga",
+    loginBtn: "Injira",
+    loginError: "Izina cyangwa ijambo ry'ibanga sibyo.",
+    toSignupText: "Ntufite konti? ",
+    toSignupLink: "Iyandikishe",
+    signupUsername: "Hitamo izina ry'ukoresha",
+    signupPassword: "Hitamo ijambo ry'ibanga",
+    signupConfirm: "Emeza ijambo ry'ibanga",
+    signupBtn: "Fungura Konti",
+    signupSuccess: "Konti yawe yarakozwe! Ushobora kwinjira.",
+    errEmpty: "Uzuza ahantu hose.",
+    errMismatch: "Amagambo y'ibanga atahuye.",
+    errExists: "Iri zina ry'ukoresha rikoreshwa n'undi.",
+    toLoginText: "Ufite konti? ",
+    toLoginLink: "Injira"
   }
 };
 
+let currentLang = "en";
+
 function setLanguage(lang){
-  document.getElementById("tagline").innerText = text[lang].tagline;
-  document.getElementById("username").placeholder = text[lang].username;
-  document.getElementById("password").placeholder = text[lang].password;
-  document.getElementById("loginBtn").innerText = text[lang].login;
-  document.getElementById("errorMsg").innerText = text[lang].error;
+  currentLang = lang;
+  const t = text[lang];
+  document.getElementById("tagline").innerText = t.tagline;
+
+  document.getElementById("loginUsername").placeholder = t.loginUsername;
+  document.getElementById("loginPassword").placeholder = t.loginPassword;
+  document.getElementById("loginBtn").innerText = t.loginBtn;
+  document.getElementById("loginError").innerText = t.loginError;
+  document.getElementById("toSignupText").firstChild.textContent = t.toSignupText;
+  document.getElementById("toSignupLink").innerText = t.toSignupLink;
+
+  document.getElementById("signupUsername").placeholder = t.signupUsername;
+  document.getElementById("signupPassword").placeholder = t.signupPassword;
+  document.getElementById("signupConfirm").placeholder = t.signupConfirm;
+  document.getElementById("signupBtn").innerText = t.signupBtn;
+  document.getElementById("signupSuccess").innerText = t.signupSuccess;
+  document.getElementById("toLoginText").firstChild.textContent = t.toLoginText;
+  document.getElementById("toLoginLink").innerText = t.toLoginLink;
+}
+
+function showForm(which){
+  document.getElementById("loginForm").classList.toggle("hidden", which !== "login");
+  document.getElementById("signupForm").classList.toggle("hidden", which !== "signup");
+  document.getElementById("loginError").style.display = "none";
+  document.getElementById("signupError").style.display = "none";
+  document.getElementById("signupSuccess").style.display = "none";
 }
 
 function login(){
-  let user = document.getElementById("username").value.trim();
-  let pass = document.getElementById("password").value.trim();
-  let errorMsg = document.getElementById("errorMsg");
+  let user = document.getElementById("loginUsername").value.trim();
+  let pass = document.getElementById("loginPassword").value.trim();
+  let errorMsg = document.getElementById("loginError");
+  errorMsg.style.display = "none";
 
   if(user === "" || pass === ""){
+    errorMsg.innerText = text[currentLang].errEmpty;
     errorMsg.style.display = "block";
     return;
   }
 
-  // Demo mode: any non-empty credentials proceed.
-  // TODO: replace with real Firebase Authentication.
+  const accounts = getAccounts();
+
+  // If this username has a saved account, password must match.
+  // If no accounts exist at all yet (fresh demo), fall back to
+  // "any non-empty credentials" so the page still works standalone.
+  const hasAnyAccounts = Object.keys(accounts).length > 0;
+
+  if(accounts[user] !== undefined){
+    if(accounts[user] !== pass){
+      errorMsg.innerText = text[currentLang].loginError;
+      errorMsg.style.display = "block";
+      return;
+    }
+  } else if(hasAnyAccounts){
+    // Accounts exist, but this username isn't one of them.
+    errorMsg.innerText = text[currentLang].loginError;
+    errorMsg.style.display = "block";
+    return;
+  }
+  // else: no accounts created yet — demo fallback allows entry.
+
   localStorage.setItem("aquamind_user", user);
   window.location.href = "dashboard.html";
+}
+
+function signup(){
+  let user = document.getElementById("signupUsername").value.trim();
+  let pass = document.getElementById("signupPassword").value.trim();
+  let confirm = document.getElementById("signupConfirm").value.trim();
+  let errorMsg = document.getElementById("signupError");
+  let successMsg = document.getElementById("signupSuccess");
+  errorMsg.style.display = "none";
+  successMsg.style.display = "none";
+
+  if(user === "" || pass === "" || confirm === ""){
+    errorMsg.innerText = text[currentLang].errEmpty;
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  if(pass !== confirm){
+    errorMsg.innerText = text[currentLang].errMismatch;
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  const accounts = getAccounts();
+
+  if(accounts[user] !== undefined){
+    errorMsg.innerText = text[currentLang].errExists;
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  accounts[user] = pass;
+  saveAccounts(accounts);
+
+  successMsg.style.display = "block";
+
+  // Clear fields and switch to login after a short pause
+  document.getElementById("signupUsername").value = "";
+  document.getElementById("signupPassword").value = "";
+  document.getElementById("signupConfirm").value = "";
+
+  setTimeout(() => {
+    showForm("login");
+    document.getElementById("loginUsername").value = user;
+  }, 1200);
 }
 
 </script>
