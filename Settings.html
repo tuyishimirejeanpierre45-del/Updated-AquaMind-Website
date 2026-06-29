@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>Settings - AquaMind AI</title>
+
+<style>
+
+body{
+
+font-family:Arial;
+
+margin:0;
+
+background: linear-gradient(135deg, #37474F 0%, #455A64 50%, #263238 100%);
+
+background-attachment: fixed;
+
+min-height: 100vh;
+
+}
+
+header{
+
+background:rgba(46, 125, 50, 0.9);
+
+color:white;
+
+padding:15px;
+
+text-align:center;
+
+position:relative;
+
+}
+
+.logout{
+
+position:absolute;
+
+right:20px;
+
+top:18px;
+
+background:rgba(255,255,255,0.2);
+
+color:white;
+
+padding:6px 14px;
+
+border-radius:6px;
+
+text-decoration:none;
+
+font-size:13px;
+
+}
+
+.nav{
+
+background:rgba(27, 94, 32, 0.92);
+
+padding:12px;
+
+text-align:center;
+
+}
+
+.nav a{
+
+color:white;
+
+text-decoration:none;
+
+margin:0 15px;
+
+font-weight:bold;
+
+}
+
+.nav a.active{
+
+text-decoration:underline;
+
+}
+
+.card{
+
+width:80%;
+
+max-width:500px;
+
+margin:20px auto;
+
+background:rgba(255, 255, 255, 0.93);
+
+padding:20px;
+
+border-radius:10px;
+
+box-shadow:0 0 10px gray;
+
+}
+
+.card h2{
+
+color:#1B5E20;
+
+margin-top:0;
+
+}
+
+.card h3{
+
+margin-bottom:6px;
+
+color:#333;
+
+}
+
+input[type="number"]{
+
+padding:8px;
+
+border-radius:6px;
+
+border:1px solid #ccc;
+
+width:100px;
+
+}
+
+select{
+
+padding:8px;
+
+border-radius:6px;
+
+border:1px solid #ccc;
+
+width:160px;
+
+}
+
+.save-msg{
+
+color:#1B5E20;
+
+font-size:13px;
+
+display:none;
+
+margin-top:10px;
+
+}
+
+button{
+
+padding:10px 20px;
+
+background:#2E7D32;
+
+color:white;
+
+border:none;
+
+cursor:pointer;
+
+margin-top:15px;
+
+border-radius:6px;
+
+font-weight:bold;
+
+}
+
+button:hover{
+
+background:#1B5E20;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>⚙ Settings</h1>
+<a href="login.html" class="logout">Logout</a>
+
+</header>
+
+<div class="nav">
+<a href="dashboard.html">Dashboard</a>
+<a href="assistant.html">Assistant</a>
+<a href="analytics.html">Analytics</a>
+<a href="weather.html">Weather</a>
+<a href="settings.html" class="active">Settings</a>
+</div>
+
+<div class="card">
+
+<h2>System Settings</h2>
+
+<h3>Automatic Irrigation</h3>
+
+<label><input type="checkbox" id="autoMode"> Enable Auto Mode</label>
+
+<br><br>
+
+<h3>Soil Moisture Threshold</h3>
+
+<input type="number" id="threshold" value="30">%
+
+<br><br>
+
+<h3>Language</h3>
+
+<select id="langSelect" onchange="changeLanguage()">
+
+<option value="en">English</option>
+
+<option value="rw">Kinyarwanda</option>
+
+</select>
+
+<br>
+
+<button onclick="saveSettings()">Save Settings</button>
+
+<p class="save-msg" id="saveMsg">Settings saved.</p>
+
+</div>
+
+<script>
+
+// ---------------------------------------------------------
+// Saves settings to localStorage so the Assistant page's
+// default language (and other preferences) can read them.
+// Replace with Firebase user-profile storage once accounts
+// are connected.
+// ---------------------------------------------------------
+
+window.onload = function(){
+  let savedLang = localStorage.getItem("aquamind_lang") || "en";
+  let savedThreshold = localStorage.getItem("aquamind_threshold") || "30";
+  let savedAuto = localStorage.getItem("aquamind_auto") === "true";
+
+  document.getElementById("langSelect").value = savedLang;
+  document.getElementById("threshold").value = savedThreshold;
+  document.getElementById("autoMode").checked = savedAuto;
+};
+
+function changeLanguage(){
+  // Live-updates immediately so the choice is visible without saving
+}
+
+function saveSettings(){
+  let lang = document.getElementById("langSelect").value;
+  let threshold = document.getElementById("threshold").value;
+  let auto = document.getElementById("autoMode").checked;
+
+  localStorage.setItem("aquamind_lang", lang);
+  localStorage.setItem("aquamind_threshold", threshold);
+  localStorage.setItem("aquamind_auto", auto);
+
+  let msg = document.getElementById("saveMsg");
+  msg.style.display = "block";
+  setTimeout(() => { msg.style.display = "none"; }, 2500);
+}
+
+</script>
+
+</body>
+
+</html>

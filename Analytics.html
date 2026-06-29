@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>Analytics - AquaMind AI</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+background-attachment: fixed;
+min-height: 100vh;
+}
+
+header{
+background:rgba(46, 125, 50, 0.9);
+color:white;
+padding:15px;
+text-align:center;
+position:relative;
+}
+
+.logout{
+
+position:absolute;
+
+right:20px;
+
+top:18px;
+
+background:rgba(255,255,255,0.2);
+
+color:white;
+
+padding:6px 14px;
+
+border-radius:6px;
+
+text-decoration:none;
+
+font-size:13px;
+
+}
+
+.nav{
+
+background:rgba(27, 94, 32, 0.92);
+
+padding:12px;
+
+text-align:center;
+
+}
+
+.nav a{
+
+color:white;
+
+text-decoration:none;
+
+margin:0 15px;
+
+font-weight:bold;
+
+}
+
+.nav a.active{
+
+text-decoration:underline;
+
+}
+
+.card{
+
+background:rgba(255, 255, 255, 0.94);
+
+width:80%;
+
+max-width:700px;
+
+margin:20px auto;
+
+padding:20px;
+
+border-radius:10px;
+
+box-shadow:0 0 10px gray;
+
+}
+
+.card h2{
+
+color:#1B5E20;
+
+margin-top:0;
+
+}
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+}
+
+th,td{
+
+padding:10px;
+
+border:1px solid #ddd;
+
+text-align:center;
+
+}
+
+th{
+
+background:#E8F5E9;
+
+color:#1B5E20;
+
+}
+
+.chart{
+
+display:flex;
+
+align-items:flex-end;
+
+gap:14px;
+
+height:160px;
+
+margin:20px 0;
+
+padding:0 10px;
+
+}
+
+.bar-group{
+
+flex:1;
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+}
+
+.bar{
+
+width:100%;
+
+background:linear-gradient(180deg, #66BB6A, #1B5E20);
+
+border-radius:4px 4px 0 0;
+
+}
+
+.bar-label{
+
+font-size:12px;
+
+margin-top:6px;
+
+color:#555;
+
+}
+
+.bar-value{
+
+font-size:11px;
+
+color:#1B5E20;
+
+font-weight:bold;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>📊 Analytics</h1>
+<a href="login.html" class="logout">Logout</a>
+
+</header>
+
+<div class="nav">
+<a href="dashboard.html">Dashboard</a>
+<a href="assistant.html">Assistant</a>
+<a href="analytics.html" class="active">Analytics</a>
+<a href="weather.html">Weather</a>
+<a href="settings.html">Settings</a>
+</div>
+
+<div class="card">
+
+<h2>Water Usage History</h2>
+
+<div class="chart" id="chart"></div>
+
+<table>
+
+<tr>
+
+<th>Date</th>
+
+<th>Water Used</th>
+
+</tr>
+
+<tr>
+
+<td>Monday</td>
+
+<td>120 Liters</td>
+
+</tr>
+
+<tr>
+
+<td>Tuesday</td>
+
+<td>150 Liters</td>
+
+</tr>
+
+<tr>
+
+<td>Wednesday</td>
+
+<td>95 Liters</td>
+
+</tr>
+
+<tr>
+
+<td>Thursday</td>
+
+<td>110 Liters</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<script>
+
+// ---------------------------------------------------------
+// Renders the table data above as a simple bar chart.
+// Replace `data` with values pulled from Firebase irrigation
+// history once the AI's self-learning logging (Slide 11) is connected.
+// ---------------------------------------------------------
+
+const data = [
+  { label: "Mon", value: 120 },
+  { label: "Tue", value: 150 },
+  { label: "Wed", value: 95 },
+  { label: "Thu", value: 110 }
+];
+
+const maxVal = Math.max(...data.map(d => d.value));
+const chart = document.getElementById("chart");
+
+data.forEach(d => {
+  let heightPct = (d.value / maxVal) * 100;
+  let group = document.createElement("div");
+  group.className = "bar-group";
+  group.innerHTML = `
+    <div class="bar-value">${d.value}L</div>
+    <div class="bar" style="height:${heightPct}%"></div>
+    <div class="bar-label">${d.label}</div>
+  `;
+  chart.appendChild(group);
+});
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard - AquaMind AI</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background-image: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=1600&q=80');
+background-size: cover;
+background-position: center;
+background-attachment: fixed;
+}
+
+header{
+background:rgba(46, 125, 50, 0.9);
+color:white;
+text-align:center;
+padding:15px;
+position:relative;
+}
+
+.logout{
+position:absolute;
+right:20px;
+top:20px;
+background:rgba(255,255,255,0.2);
+color:white;
+padding:6px 14px;
+border-radius:6px;
+text-decoration:none;
+font-size:13px;
+}
+
+.nav{
+background:rgba(27, 94, 32, 0.92);
+padding:12px;
+text-align:center;
+}
+
+.nav a{
+color:white;
+text-decoration:none;
+margin:0 15px;
+font-weight:bold;
+}
+
+.nav a.active{
+text-decoration:underline;
+}
+
+.container{
+padding:20px;
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.card{
+background:rgba(255, 255, 255, 0.92);
+padding:20px;
+margin:10px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+min-width:220px;
+text-align:center;
+}
+
+.card h2{
+margin-top:0;
+font-size:17px;
+color:#1B5E20;
+}
+
+.card p{
+font-size:28px;
+font-weight:bold;
+margin:10px 0;
+}
+
+.status-on{ color:#2E7D32; }
+.status-off{ color:#c62828; }
+
+button{
+padding:10px 20px;
+background:#2E7D32;
+color:white;
+border:none;
+cursor:pointer;
+border-radius:5px;
+font-size:14px;
+}
+
+button:hover{
+background:#1B5E20;
+}
+
+.history-card{
+width:90%;
+margin:10px auto;
+}
+
+.history-card table{
+width:100%;
+border-collapse:collapse;
+font-size:13px;
+}
+
+.history-card th, .history-card td{
+padding:8px;
+border-bottom:1px solid #ddd;
+text-align:center;
+}
+
+.live-dot{
+display:inline-block;
+width:8px;
+height:8px;
+background:#2E7D32;
+border-radius:50%;
+margin-right:5px;
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+0%{opacity:1;}
+50%{opacity:0.3;}
+100%{opacity:1;}
+}
+
+.data-note{
+text-align:center;
+font-size:12px;
+color:white;
+background:rgba(0,0,0,0.4);
+padding:6px;
+margin:0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>🌱 AquaMind AI Dashboard</h1>
+<a href="login.html" class="logout" onclick="localStorage.removeItem('aquamind_user')">Logout</a>
+</header>
+
+<!-- NAVIGATION (CONNECTS ALL PAGES) -->
+<div class="nav">
+<a href="dashboard.html" class="active">Dashboard</a>
+<a href="assistant.html">Assistant</a>
+<a href="analytics.html">Analytics</a>
+<a href="weather.html">Weather</a>
+<a href="settings.html">Settings</a>
+</div>
+
+<p class="data-note"><span class="live-dot"></span>Simulated live data — connect Firebase Realtime Database to replace with real ESP32 sensor readings</p>
+
+<div class="container">
+
+<div class="card">
+<h2>Soil Moisture</h2>
+<p id="soil">45%</p>
+</div>
+
+<div class="card">
+<h2>Temperature</h2>
+<p id="temp">26°C</p>
+</div>
+
+<div class="card">
+<h2>Humidity</h2>
+<p id="humidity">68%</p>
+</div>
+
+<div class="card">
+<h2>Pump Control</h2>
+<p id="pump" class="status-off">OFF</p>
+<button onclick="togglePump()">Toggle Pump</button>
+</div>
+
+</div>
+
+<div class="card history-card">
+<h2>Recent Pump Activity</h2>
+<table id="historyTable">
+<tr>
+<th>Time</th>
+<th>Action</th>
+</tr>
+</table>
+</div>
+
+<script>
+
+// ---------------------------------------------------------
+// DATA LAYER
+// Currently simulated to act like live sensor data for demo purposes.
+// To connect real hardware: replace updateSensorReadings() with a
+// Firebase onValue() listener reading from /sensors/soil, /sensors/temp,
+// /sensors/humidity as pushed by the ESP32.
+// ---------------------------------------------------------
+
+let pump = false;
+let history = [];
+
+function updateSensorReadings(){
+  // Simulated realistic fluctuation around baseline values
+  let soil = (40 + Math.random() * 15).toFixed(0);
+  let temp = (24 + Math.random() * 5).toFixed(0);
+  let hum = (60 + Math.random() * 15).toFixed(0);
+
+  document.getElementById("soil").innerText = soil + "%";
+  document.getElementById("temp").innerText = temp + "°C";
+  document.getElementById("humidity").innerText = hum + "%";
+}
+
+function togglePump(){
+  pump = !pump;
+  let pumpEl = document.getElementById("pump");
+  pumpEl.innerHTML = pump ? "ON" : "OFF";
+  pumpEl.className = pump ? "status-on" : "status-off";
+
+  logAction(pump ? "Pump turned ON" : "Pump turned OFF");
+}
+
+function logAction(action){
+  let time = new Date().toLocaleTimeString();
+  history.unshift({ time, action });
+  if(history.length > 5) history.pop();
+  renderHistory();
+}
+
+function renderHistory(){
+  let table = document.getElementById("historyTable");
+  table.innerHTML = "<tr><th>Time</th><th>Action</th></tr>";
+  history.forEach(item => {
+    table.innerHTML += `<tr><td>${item.time}</td><td>${item.action}</td></tr>`;
+  });
+}
+
+// Simulate live sensor updates every 4 seconds
+updateSensorReadings();
+setInterval(updateSensorReadings, 4000);
+
+</script>
+
+</body>
+</html>

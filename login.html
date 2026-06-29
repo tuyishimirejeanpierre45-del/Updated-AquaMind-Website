@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>Login - AquaMind AI</title>
+
+<style>
+
+body{
+
+font-family:Arial;
+
+margin:0;
+
+background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #66BB6A 100%);
+
+background-attachment: fixed;
+
+min-height: 100vh;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+}
+
+.login-box{
+
+background:rgba(255,255,255,0.96);
+
+padding:40px;
+
+border-radius:14px;
+
+box-shadow:0 0 20px rgba(0,0,0,0.4);
+
+width:340px;
+
+text-align:center;
+
+}
+
+.login-box h1{
+
+margin:0;
+
+font-size:30px;
+
+color:#1B5E20;
+
+}
+
+.login-box p.tagline{
+
+color:#555;
+
+font-size:13px;
+
+margin-top:5px;
+
+margin-bottom:25px;
+
+}
+
+.login-box input{
+
+width:100%;
+
+padding:12px;
+
+margin:8px 0;
+
+border:1px solid #ccc;
+
+border-radius:6px;
+
+box-sizing:border-box;
+
+font-size:14px;
+
+}
+
+.login-box button{
+
+width:100%;
+
+padding:12px;
+
+margin-top:10px;
+
+background:#2E7D32;
+
+color:white;
+
+border:none;
+
+border-radius:6px;
+
+cursor:pointer;
+
+font-size:15px;
+
+font-weight:bold;
+
+}
+
+.login-box button:hover{
+
+background:#1B5E20;
+
+}
+
+.lang-toggle{
+
+margin-top:15px;
+
+font-size:13px;
+
+}
+
+.lang-toggle a{
+
+color:#2E7D32;
+
+text-decoration:none;
+
+font-weight:bold;
+
+cursor:pointer;
+
+}
+
+.error-msg{
+
+color:#c62828;
+
+font-size:13px;
+
+display:none;
+
+margin-top:8px;
+
+}
+
+.demo-note{
+
+margin-top:20px;
+
+font-size:11px;
+
+color:#888;
+
+border-top:1px solid #eee;
+
+padding-top:10px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="login-box">
+
+<h1>🌱 AquaMind AI</h1>
+<p class="tagline" id="tagline">Smarter Farming Through Artificial Intelligence</p>
+
+<input type="text" id="username" placeholder="Username">
+<input type="password" id="password" placeholder="Password">
+
+<p class="error-msg" id="errorMsg">Incorrect username or password.</p>
+
+<button onclick="login()" id="loginBtn">Login</button>
+
+<div class="lang-toggle">
+<a onclick="setLanguage('en')">English</a> | <a onclick="setLanguage('rw')">Kinyarwanda</a>
+</div>
+
+<div class="demo-note">
+Demo mode: enter any username/password to continue.<br>
+This page is a frontend prototype — real authentication via Firebase is planned (see project roadmap).
+</div>
+
+</div>
+
+<script>
+
+const text = {
+  en: {
+    tagline: "Smarter Farming Through Artificial Intelligence",
+    username: "Username",
+    password: "Password",
+    login: "Login",
+    error: "Incorrect username or password."
+  },
+  rw: {
+    tagline: "Ubuhinzi Bwiza Bukoresheje Ubwenge Bw'Ubukorano",
+    username: "Izina ry'ukoresha",
+    password: "Ijambo ry'ibanga",
+    login: "Injira",
+    error: "Izina cyangwa ijambo ry'ibanga sibyo."
+  }
+};
+
+function setLanguage(lang){
+  document.getElementById("tagline").innerText = text[lang].tagline;
+  document.getElementById("username").placeholder = text[lang].username;
+  document.getElementById("password").placeholder = text[lang].password;
+  document.getElementById("loginBtn").innerText = text[lang].login;
+  document.getElementById("errorMsg").innerText = text[lang].error;
+}
+
+function login(){
+  let user = document.getElementById("username").value.trim();
+  let pass = document.getElementById("password").value.trim();
+  let errorMsg = document.getElementById("errorMsg");
+
+  if(user === "" || pass === ""){
+    errorMsg.style.display = "block";
+    return;
+  }
+
+  // Demo mode: any non-empty credentials proceed.
+  // TODO: replace with real Firebase Authentication.
+  localStorage.setItem("aquamind_user", user);
+  window.location.href = "dashboard.html";
+}
+
+</script>
+
+</body>
+
+</html>

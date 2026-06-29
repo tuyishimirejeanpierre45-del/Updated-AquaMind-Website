@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Assistant - AquaMind AI</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background-image: url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80');
+background-size: cover;
+background-position: center;
+background-attachment: fixed;
+}
+
+header{
+background:rgba(46, 125, 50, 0.9);
+color:white;
+padding:15px;
+text-align:center;
+position:relative;
+}
+
+.logout{
+position:absolute;
+right:20px;
+top:18px;
+background:rgba(255,255,255,0.2);
+color:white;
+padding:6px 14px;
+border-radius:6px;
+text-decoration:none;
+font-size:13px;
+}
+
+.nav{
+background:rgba(27, 94, 32, 0.92);
+padding:12px;
+text-align:center;
+}
+
+.nav a{
+color:white;
+text-decoration:none;
+margin:0 15px;
+font-weight:bold;
+}
+
+.nav a.active{
+text-decoration:underline;
+}
+
+.container{
+width:90%;
+max-width:700px;
+margin:auto;
+margin-top:20px;
+}
+
+.lang-bar{
+text-align:right;
+margin-bottom:10px;
+}
+
+.lang-bar button{
+background:rgba(255,255,255,0.85);
+border:1px solid #2E7D32;
+color:#2E7D32;
+padding:5px 14px;
+border-radius:20px;
+cursor:pointer;
+font-size:12px;
+font-weight:bold;
+margin-left:5px;
+}
+
+.lang-bar button.active{
+background:#2E7D32;
+color:white;
+}
+
+#chat{
+height:420px;
+background:rgba(255, 255, 255, 0.94);
+padding:20px;
+overflow-y:auto;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
+
+.message{
+margin:10px 0;
+padding:10px 14px;
+border-radius:8px;
+max-width:80%;
+clear:both;
+}
+
+.user{
+background:#DCF8C6;
+float:right;
+text-align:right;
+}
+
+.ai{
+background:#F1F1F1;
+float:left;
+}
+
+.suggestions{
+margin-top:10px;
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+}
+
+.suggestions button{
+background:rgba(255,255,255,0.9);
+border:1px solid #2E7D32;
+color:#1B5E20;
+padding:6px 12px;
+border-radius:16px;
+font-size:12px;
+cursor:pointer;
+}
+
+.input-row{
+margin-top:12px;
+display:flex;
+gap:8px;
+}
+
+input{
+flex:1;
+padding:12px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
+button.send-btn{
+padding:12px 20px;
+background:#2E7D32;
+color:white;
+border:none;
+cursor:pointer;
+border-radius:6px;
+font-weight:bold;
+}
+
+button.send-btn:hover{
+background:#1B5E20;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>🤖 AquaMind AI Assistant</h1>
+<a href="login.html" class="logout">Logout</a>
+</header>
+
+<div class="nav">
+<a href="dashboard.html">Dashboard</a>
+<a href="assistant.html" class="active">Assistant</a>
+<a href="analytics.html">Analytics</a>
+<a href="weather.html">Weather</a>
+<a href="settings.html">Settings</a>
+</div>
+
+<div class="container">
+
+<div class="lang-bar">
+  <button id="btnEn" class="active" onclick="setLang('en')">English</button>
+  <button id="btnRw" onclick="setLang('rw')">Kinyarwanda</button>
+</div>
+
+<div id="chat">
+
+<div class="message ai">Muraho! How can I help you today? (Try asking about water, weather, or soil — in English or Kinyarwanda)</div>
+
+</div>
+
+<div class="suggestions" id="suggestions"></div>
+
+<div class="input-row">
+<input id="question" placeholder="Type your question... / Andika ikibazo cyawe...">
+<button class="send-btn" onclick="sendMessage()">Send</button>
+</div>
+
+</div>
+
+<script>
+
+// ---------------------------------------------------------
+// BILINGUAL KEYWORD-MATCHING ASSISTANT
+// This simulates the Kinyarwanda conversational AI described in the
+// project slides (Slide 9). It currently runs on keyword detection
+// rather than a trained NLP model — replace matchResponse() with a
+// real AI API call (e.g. Anthropic API) for production use.
+// ---------------------------------------------------------
+
+let currentLang = "en";
+
+const suggestionSets = {
+  en: ["Does the crop need water?", "Will it rain today?", "What is the soil moisture?"],
+  rw: ["Ese imyaka ikeneye amazi?", "Ese hazagira imvura uyu munsi?", "Ubuhehere bw'ubutaka ni bungana iki?"]
+};
+
+function setLang(lang){
+  currentLang = lang;
+  document.getElementById("btnEn").classList.toggle("active", lang === "en");
+  document.getElementById("btnRw").classList.toggle("active", lang === "rw");
+  document.getElementById("question").placeholder = lang === "en"
+    ? "Type your question..."
+    : "Andika ikibazo cyawe...";
+  renderSuggestions();
+}
+
+function renderSuggestions(){
+  let box = document.getElementById("suggestions");
+  box.innerHTML = "";
+  suggestionSets[currentLang].forEach(s => {
+    let btn = document.createElement("button");
+    btn.innerText = s;
+    btn.onclick = () => { document.getElementById("question").value = s; sendMessage(); };
+    box.appendChild(btn);
+  });
+}
+
+function matchResponse(question){
+  let q = question.toLowerCase();
+
+  // Kinyarwanda keyword detection
+  const isKinyarwanda = /amazi|imvura|ubutaka|guhira|ubuhehere|pompe/.test(q);
+
+  if(isKinyarwanda){
+    if(q.includes("amazi") || q.includes("guhira"))
+      return "Yego. Ubutaka bufite ubuhehere bwa 18%. Ndasaba kuhira iminota 8.";
+    if(q.includes("imvura"))
+      return "Imvura irateganyijwe nyuma y'iminota 40. Ndasaba kudakoresha pompe.";
+    if(q.includes("ubutaka") || q.includes("ubuhehere"))
+      return "Ubutaka bufite ubuhehere bwa 32% ubu.";
+    if(q.includes("pompe"))
+      return "Pompe ubu iri kuzimye. Urashobora kuyikoresha uhereye ku ipaji ya Dashboard.";
+    return "Mbabarira, simbyumva neza. Gerageza kubaza ukundi.";
+  }
+
+  // English keyword detection
+  if(q.includes("water") || q.includes("irrigat"))
+    return "The soil moisture is at 18%. I recommend watering for 8 minutes.";
+  if(q.includes("rain") || q.includes("weather"))
+    return "Rain is expected in 40 minutes. I recommend skipping irrigation for now.";
+  if(q.includes("soil") || q.includes("moisture"))
+    return "Current soil moisture is 32%.";
+  if(q.includes("pump"))
+    return "The pump is currently off. You can control it from the Dashboard page.";
+  if(q.includes("temperature") || q.includes("hot") || q.includes("cold"))
+    return "The current temperature is 26°C, which is within a safe range for most crops.";
+
+  return "I'm checking your farm data... could you rephrase that, or ask about water, weather, soil, or the pump?";
+}
+
+function sendMessage(){
+  let input = document.getElementById("question");
+  let question = input.value.trim();
+  if(question === "") return;
+
+  let chat = document.getElementById("chat");
+  chat.innerHTML += `<div class="message user">${question}</div>`;
+
+  let answer = matchResponse(question);
+  chat.innerHTML += `<div class="message ai">${answer}</div>`;
+
+  input.value = "";
+  chat.scrollTop = chat.scrollHeight;
+}
+
+document.getElementById("question").addEventListener("keypress", function(e){
+  if(e.key === "Enter") sendMessage();
+});
+
+renderSuggestions();
+
+</script>
+
+</body>
+</html>
